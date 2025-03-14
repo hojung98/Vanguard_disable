@@ -2,27 +2,26 @@ import winreg
 
 def disable_startup_program(program_name):
     try:
-        # 사용자별(Explorer\StartupApproved\Run) 비활성화
-        key_path_user = r"SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\StartupApproved\Run"
-        with winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE, key_path_user, 0, winreg.KEY_SET_VALUE) as key:
-            winreg.SetValueEx(key, program_name, 0, winreg.REG_BINARY, b'\x02\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00')
-        
-        # 모든 사용자 대상(Windows\CurrentVersion\Run) 비활성화
-        key_path_all_users = r"SOFTWARE\Microsoft\Windows\CurrentVersion\Run"
-        try:
-            with winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE, key_path_all_users, 0, winreg.KEY_SET_VALUE) as key:
-                winreg.DeleteValue(key, program_name)  # 등록된 실행 값을 삭제                
-        except FileNotFoundError:
-            print(f"{program_name}이 목록에 존재하지 않아요.")
+        # ✅ "StartupApproved\Run"에서 비활성화 값 설정 (네가 올린 값 반영)
+        key_path_approved = r"SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\StartupApproved\Run"
+        disabled_value = bytes([0x03, 0x00, 0x00, 0x00, 0x2d, 0x10, 0x37, 0x34, 0x86, 0x94, 0xdb, 0x01])  # 올린 값 그대로 적용
 
-        print(f"{program_name}뱅가드 자동 실행을 비활성화했어요!! 컴퓨터를 껐다 켜시면 적용된답니당 ㅎㅎ 게임 실행 시에는 정상적으로 작동되니 제재당할 걱정은 안 하셔도 되어요!")
+        with winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE, key_path_approved, 0, winreg.KEY_SET_VALUE) as key:
+            winreg.SetValueEx(key, program_name, 0, winreg.REG_BINARY, disabled_value)
+
+        print(f"✅ {program_name}을(를) 작업 관리자에서 '사용 안 함' 상태로 변경 완료! 재부팅하면 적용됨 🎉")
+
     except FileNotFoundError:
-        print("뱅가드 레지스트리를 찾을 수 없어요 ㅠㅠㅠㅠㅠ")
+        print("❌ 레지스트리를 찾을 수 없어요! 대상 프로그램이 존재하는지 확인해 주세요.")
+    except PermissionError:
+        print("⚠️ 관리자 권한이 필요합니다! 'cmd'를 관리자 권한으로 실행한 후 다시 시도해 주세요.")
     except Exception as e:
-        print(f"오류가 발생했어요! 혹시 관리자 권한으로 실행하셨나요? 관리자 권한으로 실행해야 돼요 ㅠㅠ 아니면 보이는 오류 코드와 함께 저에게 문의해 주세요!: {e}")
+        print(f"오류 발생! 관리자 권한으로 실행하셨나요? 오류 코드: {e}")
 
     input("\n엔터를 누르면 종료됩니다.")  # 결과 확인 후 종료
 
 # 실행
 disable_startup_program("Riot Vanguard")
+
+
 
