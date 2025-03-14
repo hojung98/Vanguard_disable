@@ -10,6 +10,7 @@ def disable_startup_program(program_name):
         print("레지스트리를 찾을 수 없음.")
     except Exception as e:
         print(f"오류 발생: {e}")
+    input("\n엔터 키를 눌러 종료...")  # 결과 확인 후 종료
 
 # 실행
 disable_startup_program("Riot Vanguard")
